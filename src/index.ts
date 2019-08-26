@@ -15,10 +15,19 @@
  * limitations under the License.
  *
  */
+console.log(`${new Date().toISOString()} [proto-loader require] start`);
+
 import * as fs from 'fs';
+console.log(`${new Date().toISOString()} [proto-loader require] fs`);
+
 import * as path from 'path';
+console.log(`${new Date().toISOString()} [proto-loader require] path`);
+
 import * as Protobuf from 'protobufjs';
+console.log(`${new Date().toISOString()} [proto-loader require] protobuf`);
+
 import * as descriptor from 'protobufjs/ext/descriptor';
+console.log(`${new Date().toISOString()} [proto-loader require] descriptor`);
 
 import camelCase = require('lodash.camelcase');
 
@@ -324,6 +333,8 @@ export function loadSync(
   return createPackageDefinition(root, options!);
 }
 
+console.log(`${new Date().toISOString()} [proto-loader require] after loadSync`);
+
 // Load Google's well-known proto files that aren't exposed by Protobuf.js.
 {
   // Protobuf.js exposes: any, duration, empty, field_mask, struct, timestamp,
@@ -340,3 +351,5 @@ export function loadSync(
     Protobuf.common(proto, descriptor.nested.google.nested);
   }
 }
+
+console.log(`${new Date().toISOString()} [proto-loader require] end`);
