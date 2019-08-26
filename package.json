@@ -40,7 +40,7 @@
   ],
   "dependencies": {
     "lodash.camelcase": "^4.3.0",
-    "protobufjs": "^6.8.6"
+    "protobufjs": "git+https://github.com/stevenschobert/protobuf.js.git"
   },
   "devDependencies": {
     "@types/execa": "^0.8.0",
