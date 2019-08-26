@@ -16,57 +16,66 @@
  */
 
 import * as gulp from 'gulp';
-import * as healthCheck from './packages/grpc-health-check/gulpfile';
-import * as jsCore from './packages/grpc-js/gulpfile';
-import * as nativeCore from './packages/grpc-native-core/gulpfile';
-import * as protobuf from './packages/proto-loader/gulpfile';
-import * as internalTest from './test/gulpfile';
 
-const root = __dirname;
+import * as fs from 'fs';
+import * as mocha from 'gulp-mocha';
+import * as path from 'path';
+import * as execa from 'execa';
+import * as semver from 'semver';
 
-const installAll = gulp.parallel(jsCore.install, nativeCore.install, healthCheck.install, protobuf.install, internalTest.install);
+Error.stackTraceLimit = Infinity;
 
-const installAllWindows = gulp.parallel(jsCore.install, nativeCore.installWindows, healthCheck.install, protobuf.install, internalTest.install);
+const protojsDir = __dirname;
+const tslintPath = path.resolve(protojsDir, 'node_modules/google-ts-style/tslint.json');
+const tsconfigPath = path.resolve(protojsDir, 'tsconfig.json');
+const outDir = path.resolve(protojsDir, 'build');
+const srcDir = path.resolve(protojsDir, 'src');
+const testDir = path.resolve(protojsDir, 'test');
 
-const lint = gulp.parallel(jsCore.lint, nativeCore.lint);
+const execNpmVerb = (verb: string, ...args: string[]) =>
+  execa('npm', [verb, ...args], {cwd: protojsDir, stdio: 'inherit'});
+const execNpmCommand = execNpmVerb.bind(null, 'run');
 
-const build = gulp.parallel(jsCore.compile, nativeCore.build, protobuf.compile);
+const install = () => execNpmVerb('install', '--unsafe-perm');
 
-const link = gulp.series(healthCheck.linkAdd);
+/**
+ * Runs tslint on files in src/, with linting rules defined in tslint.json.
+ */
+const lint = () => execNpmCommand('check');
 
-const setup = gulp.series(installAll, link);
+const cleanFiles = () => execNpmCommand('clean');
 
-const setupWindows = gulp.series(installAllWindows, link);
+const clean = gulp.series(install, cleanFiles);
 
-const setupPureJSInterop = gulp.parallel(jsCore.install, protobuf.install, internalTest.install);
+const cleanAll = gulp.parallel(clean);
 
-const clean = gulp.parallel(jsCore.clean, nativeCore.clean, protobuf.clean);
+/**
+ * Transpiles TypeScript files in src/ and test/ to JavaScript according to the settings
+ * found in tsconfig.json.
+ */
+const compile = () => execNpmCommand('compile');
 
-const cleanAll = gulp.parallel(jsCore.cleanAll, nativeCore.cleanAll, healthCheck.cleanAll, internalTest.cleanAll, protobuf.cleanAll);
+/**
+ * Transpiles src/ and test/, and then runs all tests.
+ */
+const runTests = () => {
+  if (semver.satisfies(process.version, ">=6")) {
+    return gulp.src(`${outDir}/test/**/*.js`)
+      .pipe(mocha({reporter: 'mocha-jenkins-reporter',
+                    require: ['ts-node/register']}));
+  } else {
+    console.log(`Skipping proto-loader tests for Node ${process.version}`);
+    return Promise.resolve(null);
+  }
+}
 
-const nativeTestOnly = gulp.parallel(nativeCore.test, healthCheck.test);
-
-const nativeTest = gulp.series(build, nativeTestOnly);
-
-const testOnly = gulp.parallel(jsCore.test, nativeTestOnly, protobuf.test);
-
-const test = gulp.series(build, testOnly, internalTest.test);
-
-const docGen = gulp.series(nativeCore.docGen);
+const test = gulp.series(install, runTests);
 
 export {
-  installAll,
-  installAllWindows,
+  install,
   lint,
-  build,
-  link,
-  setup,
-  setupWindows,
-  setupPureJSInterop,
   clean,
   cleanAll,
-  nativeTestOnly,
-  nativeTest,
-  test,
-  docGen
-};
+  compile,
+  test
+}

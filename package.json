@@ -1,19 +1,53 @@
 {
-  "name": "grpc-js-repository",
-  "version": "0.1.0",
-  "description": "Dummy package for the grpc-node repository",
-  "private": true,
-  "keywords": [],
-  "author": {
-    "name": "Google Inc."
+  "name": "@grpc/proto-loader",
+  "version": "0.5.1",
+  "author": "Google Inc.",
+  "contributors": [
+    {
+      "name": "Michael Lumish",
+      "email": "mlumish@google.com"
+    }
+  ],
+  "description": "gRPC utility library for loading .proto files",
+  "homepage": "https://grpc.io/",
+  "main": "build/src/index.js",
+  "typings": "build/src/index.d.ts",
+  "scripts": {
+    "build": "npm run compile",
+    "clean": "gts clean",
+    "compile": "tsc -p .",
+    "format": "clang-format -i -style=\"{Language: JavaScript, BasedOnStyle: Google, ColumnLimit: 80}\" src/*.ts test/*.ts",
+    "lint": "tslint -c node_modules/google-ts-style/tslint.json -p . -t codeFrame --type-check",
+    "prepare": "npm run compile",
+    "test": "gulp test",
+    "check": "gts check",
+    "fix": "gts fix",
+    "pretest": "npm run compile",
+    "posttest": "npm run check"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/grpc/grpc-node.git"
   },
   "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/grpc/grpc-node/issues"
+  },
+  "files": [
+    "LICENSE",
+    "build/src/*.d.ts",
+    "build/src/*.js"
+  ],
+  "dependencies": {
+    "lodash.camelcase": "^4.3.0",
+    "protobufjs": "^6.8.6"
+  },
   "devDependencies": {
     "@types/execa": "^0.8.0",
     "@types/gulp": "^4.0.5",
     "@types/gulp-mocha": "0.0.31",
     "@types/ncp": "^2.0.1",
-    "@types/node": "^8.0.32",
+    "@types/node": "^10.12.5",
     "@types/pify": "^3.0.0",
     "@types/semver": "^5.5.0",
     "coveralls": "^3.0.1",
@@ -42,27 +76,13 @@
     "through2": "^2.0.3",
     "ts-node": "^8.1.0",
     "tslint": "^5.5.0",
-    "typescript": "^3.5.3",
-    "xml2js": "^0.4.19"
+    "typescript": "~3.3.3333",
+    "xml2js": "^0.4.19",
+    "@types/lodash.camelcase": "^4.3.4",
+    "clang-format": "^1.2.2",
+    "gts": "^0.5.3"
   },
-  "contributors": [
-    {
-      "name": "Google Inc."
-    }
-  ],
-  "nyc": {
-    "include": [
-      "packages/grpc-health-check/health.js",
-      "packages/grpc-js/build/src/*",
-      "packages/grpc-native-core/index.js",
-      "packages/grpc-native-core/src/*.js",
-      "packages/proto-loader/build/src/*"
-    ],
-    "cache": true,
-    "all": true
-  },
-  "scripts": {
-    "test": "nyc gulp test && GRPC_DNS_RESOLVER=ares nyc gulp nativeTestOnly",
-    "coverage": "nyc report --reporter=text-lcov | coveralls"
+  "engines": {
+    "node": ">=6"
   }
 }

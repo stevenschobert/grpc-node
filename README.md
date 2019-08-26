@@ -1,50 +1,53 @@
-[![Build Status](https://travis-ci.org/grpc/grpc-node.svg?branch=master)](https://travis-ci.org/grpc/grpc-node)
-# gRPC on Node.js
+# gRPC Protobuf Loader
 
-## Implementations
+A utility package for loading `.proto` files for use with gRPC, using the latest Protobuf.js package.
+Please refer to [protobuf.js' documentation](https://github.com/dcodeIO/protobuf.js/blob/master/README.md)
+to understands its features and limitations.
 
-For a comparison of the features available in these two libraries, see [this document](https://github.com/grpc/grpc-node/tree/master/PACKAGE-COMPARISON.md)
+## Installation
 
-### C-based Client and Server
+```sh
+npm install @grpc/proto-loader
+```
 
-Directory: [`packages/grpc-native-core`](https://github.com/grpc/grpc-node/tree/master/packages/grpc-native-core) (see here for installation information)
+## Usage
 
-npm package: [grpc](https://www.npmjs.com/package/grpc).
+```js
+const protoLoader = require('@grpc/proto-loader');
+const grpcLibrary = require('grpc');
+// OR
+const grpcLibrary = require('@grpc/grpc-js');
 
-This is the existing, feature-rich implementation of gRPC using a C++ addon. It works on all LTS versions of Node.js on most platforms that Node.js runs on.
+protoLoader.load(protoFileName, options).then(packageDefinition => {
+  const packageObject = grpcLibrary.loadPackageDefinition(packageDefinition);
+});
+// OR
+const packageDefinition = protoLoader.loadSync(protoFileName, options);
+const packageObject = grpcLibrary.loadPackageDefinition(packageDefinition);
+```
 
-### Pure JavaScript Client
+The options parameter is an object that can have the following optional properties:
 
-Directory: [`packages/grpc-js`](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js)
+| Field name | Valid values | Description
+|------------|--------------|------------
+| `keepCase` | `true` or `false` | Preserve field names. The default is to change them to camel case.
+| `longs` | `String` or `Number` | The type to use to represent `long` values. Defaults to a `Long` object type.
+| `enums` | `String` | The type to use to represent `enum` values. Defaults to the numeric value.
+| `bytes` | `Array` or `String` | The type to use to represent `bytes` values. Defaults to `Buffer`.
+| `defaults` | `true` or `false` | Set default values on output objects. Defaults to `false`.
+| `arrays` | `true` or `false` | Set empty arrays for missing array values even if `defaults` is `false` Defaults to `false`.
+| `objects` | `true` or `false` | Set empty objects for missing object values even if `defaults` is `false` Defaults to `false`.
+| `oneofs` | `true` or `false` | Set virtual oneof properties to the present field's name. Defaults to `false`.
+| `includeDirs` | An array of strings | A list of search paths for imported `.proto` files.
 
-npm package: [@grpc/grpc-js](https://www.npmjs.com/package/@grpc/grpc-js)
+The following options object closely approximates the existing behavior of `grpc.load`:
 
-**This library is currently incomplete and experimental. It is built on the [http2 Node module](https://nodejs.org/api/http2.html).**
-
-This library implements the core functionality of gRPC purely in JavaScript, without a C++ addon. It works on the latest version of Node.js on all platforms that Node.js runs on.
-
-## Other Packages
-
-### gRPC Protobuf Loader
-
-Directory: [`packages/proto-loader`](https://github.com/grpc/grpc-node/tree/master/packages/proto-loader)
-
-npm package: [@grpc/proto-loader](https://www.npmjs.com/package/@grpc/proto-loader)
-
-This library loads `.proto` files into objects that can be passed to the gRPC libraries.
-
-### gRPC Tools
-
-Directory: [`packages/grpc-tools`](https://github.com/grpc/grpc-node/tree/master/packages/grpc-tools)
-
-npm package: [grpc-tools](https://www.npmjs.com/package/grpc-tools)
-
-Distribution of protoc and the gRPC Node protoc plugin for ease of installation with npm.
-
-### gRPC Health Check Service
-
-Directory: [`packages/grpc-health-check`](https://github.com/grpc/grpc-node/tree/master/packages/grpc-health-check)
-
-npm package: [grpc-health-check](https://www.npmjs.com/package/grpc-health-check)
-
-Health check service for gRPC servers.
+```js
+const options = {
+  keepCase: true,
+  longs: String,
+  enums: String,
+  defaults: true,
+  oneofs: true
+}
+```
